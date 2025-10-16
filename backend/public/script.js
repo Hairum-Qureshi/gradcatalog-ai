@@ -31,7 +31,7 @@ function sendRequest() {
     aiResponseDiv === null || aiResponseDiv === void 0 ? void 0 : aiResponseDiv.classList.add("hidden");
     totalSeconds = 0;
     setInterval(setCounter, 1000);
-    fetch("http://localhost:8000/send-question", {
+    fetch("/send-question", {
         method: "POST",
         headers: {
             "Content-Type": "text/plain"
