@@ -29,6 +29,11 @@ function sendRequest() {
 	const question = (
 		document.querySelector("#questionInput") as HTMLInputElement
 	).value;
+
+	if (!question.trim()) {
+		return alert("Please provide a question");
+	}
+
 	aiResponseAnswerDiv.innerHTML = "Retrieving answer, please wait...";
 	aiResponseDiv?.classList.remove("block");
 	aiResponseDiv?.classList.add("hidden");
