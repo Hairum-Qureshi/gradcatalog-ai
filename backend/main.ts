@@ -3,7 +3,6 @@ import axios from "axios";
 import { load } from "cheerio";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getPrompt1, getPrompt2 } from "./prompts";
-import chalk from "chalk"; // only for testing
 import dotenv from "dotenv";
 import path from "path";
 
@@ -11,7 +10,6 @@ dotenv.config();
 
 const app = express();
 app.use(express.static(path.join(__dirname, "public")));
-// app.use(express.json());
 app.use(express.text());
 
 const PORT = process.env.PORT! || 8000;
@@ -37,7 +35,6 @@ async function getPageContent(href: string): Promise<PageData> {
 
 	return {
 		linkRef: href,
-		// content: pageContent.text().replace(/\s+/g, " ").trim()
 		content: pageContent.html()!
 	};
 }
