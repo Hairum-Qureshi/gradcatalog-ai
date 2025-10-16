@@ -1,21 +1,23 @@
 function sendRequest() {
+	const question = (
+		document.querySelector("#questionInput") as HTMLInputElement
+	).value;
+
 	fetch("http://localhost:8000/send-question", {
 		method: "POST",
 		headers: {
-			"Content-Type": "application/json" 
+			"Content-Type": "text/plain"
 		},
-		body: JSON.stringify({
-			question: "This is a test"
-		})
+		body: question
 	})
 		.then(response => {
 			if (!response.ok) {
 				throw new Error(`Server error: ${response.status}`);
 			}
-			return response.json();
+			return response.text();
 		})
 		.then(data => {
-			console.log("Response from server:", data);
+			console.log(data);
 		})
 		.catch(error => {
 			console.error("Error sending request:", error);
