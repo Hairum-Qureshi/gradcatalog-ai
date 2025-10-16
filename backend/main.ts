@@ -7,10 +7,13 @@ import { getPrompt1, getPrompt2 } from "./prompts";
 import fs from "fs"; // only for testing
 import chalk from "chalk"; // only for testing
 import dotenv from "dotenv";
+import path from "path";
 
 dotenv.config();
 
 const app = express();
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
 
 const PORT = 8000;
 
@@ -32,6 +35,10 @@ export interface PageData {
 	content: string;
 }
 
+// ! Issues:
+// ! - if you ask Gemini for contact info regarding the grad program, it fails to provide contact info
+// ! - if you ask Gemini for number of credits, it fails to answer correctly unlike before
+
 async function getPageContent(href: string): Promise<PageData> {
 	const page = await axios.get(href);
 	const pageDataHTML = page.data;
@@ -40,7 +47,8 @@ async function getPageContent(href: string): Promise<PageData> {
 
 	return {
 		linkRef: href,
-		content: pageContent.text().replace(/\s+/g, " ").trim()
+		// content: pageContent.text().replace(/\s+/g, " ").trim()
+		content: pageContent.html()!
 	};
 }
 
@@ -55,6 +63,7 @@ function askAI(gradCISCatalogLinks: CatalogLinkData[]) {
 
 			if (text !== "N/A") {
 				const hrefList = text.split(",");
+				console.log(chalk.yellow(hrefList));
 				const pageTexts: PageData[] | PageData = await Promise.all(
 					hrefList.map(getPageContent)
 				);
@@ -72,7 +81,9 @@ function askAI(gradCISCatalogLinks: CatalogLinkData[]) {
 						const response = await result.response;
 						const answer = response.text();
 						fs.writeFile("answer.txt", answer, error => {
-							console.log(error);
+							if (error) {
+								console.error(chalk.redBright(error));
+							}
 						});
 					}
 				}
@@ -115,6 +126,10 @@ app.get("/", async (req: Request, res: Response) => {
 	askAI(gradCISCatalogLinks);
 
 	res.json(gradCISCatalogLinks);
+});
+
+app.get("/test", (req: Request, res: Response) => {
+	res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
 app.listen(PORT, () => {
