@@ -13,9 +13,8 @@ const app = express();
 app.use(express.static(path.join(__dirname, "public")));
 // app.use(express.json());
 app.use(express.text());
-app.use(express.urlencoded({ extended: true })); // <-- without this, you won't be able to read form data
 
-const PORT = 8000;
+const PORT = process.env.PORT! || 8000;
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
