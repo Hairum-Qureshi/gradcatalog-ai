@@ -4,6 +4,13 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+			integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer"
+		/>
 		<title>University of Delaware Graduate Catalog AI Powered Q&A</title>
 	</head>
 	<!-- TODO - maybe add a feedback mechanism where if the user thumbs down the result, they're able to provide feedback that'll get sent to you -->
@@ -40,7 +47,11 @@
 			</div>
 			<div>
 				<p class="text-sm my-2 text-slate-400">
-					AI can make mistakes. Please always double check the linked sources
+					<span
+						><i
+							class="fa-solid fa-triangle-exclamation text-yellow-500"
+						></i> </span
+					>AI can make mistakes. Please always double check the linked sources
 					provided in the answers and if you're unsure about anything, refer to
 					the UD graduate catalog.
 				</p>
