@@ -83,9 +83,7 @@ async function askAI(
 			// 	}
 			// }
 		} else {
-			console.log(
-				"Please keep your questions focused on the UD CIS graduate program."
-			);
+			return "Please keep your questions focused on the UD CIS graduate program.";
 		}
 	}
 }
