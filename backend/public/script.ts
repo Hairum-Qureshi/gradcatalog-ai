@@ -34,7 +34,8 @@ function sendRequest() {
 		return alert("Please provide a question");
 	}
 
-	aiResponseAnswerDiv.innerHTML = "Retrieving answer, please wait...";
+	aiResponseAnswerDiv.innerHTML =
+		"<div class = 'flex items-center'><img src = './loading-gif.gif' class = 'w-8 h-8 mr-2' /><p>Generating response, please wait...</p></div>";
 	aiResponseDiv?.classList.remove("block");
 	aiResponseDiv?.classList.add("hidden");
 	totalSeconds = 0;
