@@ -14,6 +14,7 @@ dotenv.config();
 const app = express();
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // <-- without this, you won't be able to read form data
 
 const PORT = 8000;
 
@@ -52,46 +53,85 @@ async function getPageContent(href: string): Promise<PageData> {
 	};
 }
 
-function askAI(gradCISCatalogLinks: CatalogLinkData[]) {
-	rl.question(
-		"Please enter a question regarding the UD CIS grad program: ",
-		async question => {
-			const prompt = getPrompt1(question, gradCISCatalogLinks);
-			const result = await model.generateContent(prompt);
-			const response = await result.response;
-			const text = response.text();
+async function askAI(
+	gradCISCatalogLinks: CatalogLinkData[],
+	question?: string
+) {
+	// rl.question(
+	// 	"Please enter a question regarding the UD CIS grad program: ",
+	// 	async question => {
+	// 		const prompt = getPrompt1(question, gradCISCatalogLinks);
+	// 		const result = await model.generateContent(prompt);
+	// 		const response = await result.response;
+	// 		const text = response.text();
 
-			if (text !== "N/A") {
-				const hrefList = text.split(",");
-				console.log(chalk.yellow(hrefList));
-				const pageTexts: PageData[] | PageData = await Promise.all(
-					hrefList.map(getPageContent)
-				);
-				const prompt = getPrompt2(question, hrefList, pageTexts);
+	// 		if (text !== "N/A") {
+	// 			const hrefList = text.split(",");
+	// 			console.log(chalk.yellow(hrefList));
+	// 			const pageTexts: PageData[] | PageData = await Promise.all(
+	// 				hrefList.map(getPageContent)
+	// 			);
+	// 			const prompt = getPrompt2(question, hrefList, pageTexts);
 
-				// Handles live AI text generation in terminal via content streaming
-				const result = await model.generateContentStream(prompt);
-				for await (const chunk of result.stream) {
-					const text = chunk.text();
-					if (text) {
-						process.stdout.write(chalk.greenBright(text));
+	// 			// Handles live AI text generation in terminal via content streaming
+	// 			const result = await model.generateContentStream(prompt);
+	// 			for await (const chunk of result.stream) {
+	// 				const text = chunk.text();
+	// 				if (text) {
+	// 					process.stdout.write(chalk.greenBright(text));
 
-						// For better readability, the AI's response is sent to an 'answers.txt' file that gets created
-						const result = await model.generateContent(prompt);
-						const response = await result.response;
-						const answer = response.text();
-						fs.writeFile("answer.txt", answer, error => {
-							if (error) {
-								console.error(chalk.redBright(error));
-							}
-						});
-					}
+	// 					// For better readability, the AI's response is sent to an 'answers.txt' file that gets created
+	// 					const result = await model.generateContent(prompt);
+	// 					const response = await result.response;
+	// 					const answer = response.text();
+	// 					fs.writeFile("answer.txt", answer, error => {
+	// 						if (error) {
+	// 							console.error(chalk.redBright(error));
+	// 						}
+	// 					});
+	// 				}
+	// 			}
+	// 		} else {
+	// 			console.log("Could not find any applicable reference links for query");
+	// 		}
+	// 	}
+	// );
+	if (question) {
+		const prompt = getPrompt1(question, gradCISCatalogLinks);
+		const result = await model.generateContent(prompt);
+		const response = await result.response;
+		const text = response.text();
+
+		if (text !== "N/A") {
+			const hrefList = text.split(",");
+			console.log(chalk.yellow(hrefList));
+			const pageTexts: PageData[] | PageData = await Promise.all(
+				hrefList.map(getPageContent)
+			);
+			const prompt = getPrompt2(question, hrefList, pageTexts);
+
+			// Handles live AI text generation in terminal via content streaming
+			const result = await model.generateContentStream(prompt);
+			for await (const chunk of result.stream) {
+				const text = chunk.text();
+				if (text) {
+					process.stdout.write(chalk.greenBright(text));
+
+					// For better readability, the AI's response is sent to an 'answers.txt' file that gets created
+					const result = await model.generateContent(prompt);
+					const response = await result.response;
+					const answer = response.text();
+					fs.writeFile("answer.txt", answer, error => {
+						if (error) {
+							console.error(chalk.redBright(error));
+						}
+					});
 				}
-			} else {
-				console.log("Could not find any applicable reference links for query");
 			}
+		} else {
+			console.log("Could not find any applicable reference links for query");
 		}
-	);
+	}
 }
 
 export async function createDataSourceJSON(): Promise<CatalogLinkData[]> {
@@ -119,16 +159,14 @@ export async function createDataSourceJSON(): Promise<CatalogLinkData[]> {
 	return gradCISCatalogLinks;
 }
 
-app.get("/", async (req: Request, res: Response) => {
-	// the frontend will send in their question through req.body; for the time being, questions are being inputted through the terminal
-
+app.post("/send-question", async (req: Request, res: Response) => {
 	const gradCISCatalogLinks = await createDataSourceJSON();
-	askAI(gradCISCatalogLinks);
 
-	res.json(gradCISCatalogLinks);
+	const { question } = req.body;
+	await askAI(gradCISCatalogLinks, question);
 });
 
-app.get("/test", (req: Request, res: Response) => {
+app.get("/", (req: Request, res: Response) => {
 	res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
