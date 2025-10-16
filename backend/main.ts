@@ -13,7 +13,8 @@ dotenv.config();
 
 const app = express();
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
+// app.use(express.json());
+app.use(express.text());
 app.use(express.urlencoded({ extended: true })); // <-- without this, you won't be able to read form data
 
 const PORT = 8000;
@@ -35,10 +36,6 @@ export interface PageData {
 	linkRef: string;
 	content: string;
 }
-
-// ! Issues:
-// ! - if you ask Gemini for contact info regarding the grad program, it fails to provide contact info
-// ! - if you ask Gemini for number of credits, it fails to answer correctly unlike before
 
 async function getPageContent(href: string): Promise<PageData> {
 	const page = await axios.get(href);
@@ -104,30 +101,33 @@ async function askAI(
 
 		if (text !== "N/A") {
 			const hrefList = text.split(",");
-			console.log(chalk.yellow(hrefList));
 			const pageTexts: PageData[] | PageData = await Promise.all(
 				hrefList.map(getPageContent)
 			);
 			const prompt = getPrompt2(question, hrefList, pageTexts);
 
+			const result = await model.generateContent(prompt);
+			const response = await result.response;
+			const answer = response.text();
+			return answer;
 			// Handles live AI text generation in terminal via content streaming
-			const result = await model.generateContentStream(prompt);
-			for await (const chunk of result.stream) {
-				const text = chunk.text();
-				if (text) {
-					process.stdout.write(chalk.greenBright(text));
-
-					// For better readability, the AI's response is sent to an 'answers.txt' file that gets created
-					const result = await model.generateContent(prompt);
-					const response = await result.response;
-					const answer = response.text();
-					fs.writeFile("answer.txt", answer, error => {
-						if (error) {
-							console.error(chalk.redBright(error));
-						}
-					});
-				}
-			}
+			// const result = await model.generateContentStream(prompt);
+			// for await (const chunk of result.stream) {
+			// 	const text = chunk.text();
+			// 	if (text) {
+			// 		process.stdout.write(chalk.greenBright(text));
+			// 		// For better readability, the AI's response is sent to an 'answers.txt' file that gets created
+			// 		const result = await model.generateContent(prompt);
+			// 		const response = await result.response;
+			// 		const answer = response.text();
+			// fs.writeFile("answer.txt", answer, error => {
+			// 	if (error) {
+			// 		console.error(chalk.redBright(error));
+			// 	}
+			// });
+			// 		return answer;
+			// 	}
+			// }
 		} else {
 			console.log("Could not find any applicable reference links for query");
 		}
@@ -160,10 +160,12 @@ export async function createDataSourceJSON(): Promise<CatalogLinkData[]> {
 }
 
 app.post("/send-question", async (req: Request, res: Response) => {
+	const question = req.body;
+	console.log("received:", question);
 	const gradCISCatalogLinks = await createDataSourceJSON();
-
-	const { question } = req.body;
-	await askAI(gradCISCatalogLinks, question);
+	const answer = await askAI(gradCISCatalogLinks, question);
+	console.log("answer received and sent to frontend");
+	res.status(200).send(answer);
 });
 
 app.get("/", (req: Request, res: Response) => {
