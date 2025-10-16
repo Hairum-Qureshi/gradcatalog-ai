@@ -41,7 +41,7 @@ function sendRequest() {
 	totalSeconds = 0;
 	setInterval(setCounter, 1000);
 
-	fetch("http://localhost:8000/send-question", {
+	fetch("/send-question", {
 		method: "POST",
 		headers: {
 			"Content-Type": "text/plain"
