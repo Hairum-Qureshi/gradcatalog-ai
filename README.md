@@ -8,7 +8,7 @@ Built with **Node.js**, **Express.js**, **TypeScript**, **TailwindCSS**, and **H
 ---
 
 ## Motivation
-Our capstone client requested an expanded dataset of question-answer pairs for the chatbot. I contributed by developing a system that automatically compiles data from the university’s graduate catalog. Instead of manually gathering questions from numerous web pages, I implemented a web scraping pipeline to retrieve and structure relevant content, reducing manual work and improving dataset coverage.
+My capstone client requested an expanded dataset of question-answer pairs for the chatbot. I contributed by developing a system that automatically compiles data from the university’s graduate catalog. Instead of manually gathering questions from numerous web pages, I implemented a web scraping pipeline to retrieve and structure relevant content, reducing manual work and improving dataset coverage.
 
 ---
 
