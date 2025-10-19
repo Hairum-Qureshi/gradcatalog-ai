@@ -42,7 +42,7 @@ async function getPageContent(href: string): Promise<PageData> {
 async function askAI(
 	gradCISCatalogLinks: CatalogLinkData[],
 	question?: string
-) {
+): Promise<string> {
 	if (question) {
 		const prompt = getPrompt1(question, gradCISCatalogLinks);
 		const result = await model.generateContent(prompt);
@@ -82,6 +82,8 @@ async function askAI(
 			return "Please keep your questions focused on the UD CIS graduate program.";
 		}
 	}
+
+	return "Question not provided";
 }
 
 export async function createDataSourceJSON(): Promise<CatalogLinkData[]> {
